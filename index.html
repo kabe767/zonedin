@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zonedin.com-BEP201 prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">zoned<span>in</span></div>
+  <div class="topbar-right">
+    <div class="date-display" id="topbar-date"></div>
+    <div class="status-pill" id="status-pill" onclick="cycleStatus()">
+      <div class="status-dot available" id="topbar-dot"></div>
+      <span id="topbar-status-text">Available</span>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ══ CALENDAR ══ -->
+  <div class="card" id="calendar-card">
+    <div class="card-header">
+      <div class="card-title">Calendar</div>
+    </div>
+    <div class="card-body">
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button>
+        <div class="cal-nav-title" id="cal-month-label"></div>
+        <button class="cal-btn" onclick="changeMonth(1)">&#8250;</button>
+      </div>
+      <div class="cal-grid" id="cal-dow-row"></div>
+      <div class="cal-grid" id="cal-days"></div>
+    </div>
+    <div class="add-event-form">
+      <div class="form-row">
+        <label class="form-label">Add to <span id="form-date-label">selected date</span></label>
+        <input type="text" class="form-input" id="event-title-input" placeholder="Event or task title…" />
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label class="form-label">Type</label>
+          <select class="form-select" id="event-type-input">
+            <option value="class">Class</option>
+            <option value="study">Study</option>
+            <option value="deadline">Deadline</option>
+            <option value="deepwork">Deepwork</option>
+            <option value="personal">Personal</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Time</label>
+          <input type="time" class="form-input" id="event-time-input" />
+        </div>
+        <div>
+        <label class="form-label">Auto-Block Apps</label>
+        <select class="form-select" id="event-block-input">
+            <option value="on">Auto-Block: On</option>
+            <option value="off">Auto-Block: Off</option>
+        </select>
+        </div>
+      </div>
+      <button class="btn-add" onclick="addEvent()">+ Add Event</button>
+    </div>
+  </div>
+
+  <!-- ══ TO-DO / SCHEDULE ══ -->
+  <div class="card" id="todo-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title" id="todo-header-title">Today's Schedule</div>
+      </div>
+      <div class="todo-nav">
+        <button class="todo-nav-btn" onclick="shiftViewDate(-1)">&#8249;</button>
+        <button class="todo-nav-btn" onclick="goToToday()">Today</button>
+        <button class="todo-nav-btn" onclick="shiftViewDate(1)">&#8250;</button>
+      </div>
+    </div>
+    <div class="card-body" style="overflow-y:auto;max-height:calc(100vh - 200px)">
+      <div class="todo-date-label" id="todo-date-label"></div>
+      <div class="todo-date-sub" id="todo-date-sub"></div>
+      <div class="progress-strip" id="progress-strip"></div>
+      <div class="event-list" id="event-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ APP BLOCKER ══ -->
+  <div class="card" id="blocker-card">
+    <div class="card-header">
+      <div class="card-title">App Blocker</div>
+    </div>
+    <div class="card-body">
+      <div class="shield-display" id="shield-display">
+        <div class="shield-status" id="shield-status">Protection off</div>
+        <div class="shield-sub" id="shield-sub">Select apps and enable blocking</div>
+      </div>
+
+      <div class="timer-row">
+        <label>Block for</label>
+        <input type="number" id="block-duration" min="5" max="480" value="60" style="max-width:60px" />
+        <span style="font-size:12px;color:var(--text2)">min</span>
+      </div>
+
+      <div class="app-list" id="app-list-container"></div>
+
+      <div class="section-divider"></div>
+
+      <!-- Add custom app -->
+      <div class="add-app-form">
+        <div class="add-app-row">
+          <input
+            type="text"
+            id="new-app-name"
+            class="form-input add-app-input"
+            placeholder="Add an app…"
+            maxlength="30"
+            onkeydown="if(event.key==='Enter') addCustomApp()"
+          />
+          <button class="btn-add-app" onclick="addCustomApp()" title="Add app">+</button>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="blocker-toggle" id="blocker-toggle" onclick="toggleBlocker()">
+        <div>
+          <div class="blocker-label" id="blocker-label">Enable Blocking</div>
+          <div class="blocker-sub" id="blocker-sub-text">0 apps selected</div>
+        </div>
+        <div class="toggle-switch" id="blocker-switch"></div>
+      </div>
+      <div class="desc">Auto-block automatically blocks selected apps</div>
+    </div>
+  </div>
+
+  <!-- ══ STATUS ══ -->
+  <div class="card" id="status-card">
+    <div class="card-header">
+      <div class="card-title">Status</div>
+    </div>
+    <div class="card-body">
+      <div class="status-grid">
+        <div class="status-option available active" onclick="setStatus('available')">
+          <div class="status-label">Available</div>
+        </div>
+        <div class="status-option focusing" onclick="setStatus('focusing')">
+          <div class="status-label">Focusing</div>
+        </div>
+      </div>
+      <input type="text" class="custom-message-input" id="status-message" placeholder="Custom status message…" oninput="updateStatusPreview()" maxlength="60" />
+      <div class="section-divider"></div>
+      <div class="status-preview">
+        <div class="status-preview-label">How others see you</div>
+        <div class="status-card-mock">
+          <div class="mock-avatar">BEP</div>
+          <div>
+            <div class="mock-name" id="mock-name">BEP201</div>
+            <div class="mock-status-row">
+              <div class="mock-dot" id="mock-dot" style="background:#7eb893"></div>
+              <div class="mock-status-text" id="mock-status-text">Available — ready to connect</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
